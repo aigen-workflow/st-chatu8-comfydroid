@@ -110951,7 +110951,7 @@ function addNewElement() {
     // 默认设置
     // ------------------------------------------------------------------
     const DEFAULT_SETTINGS = {
-        comfy_endpoint: '',          // 远程 ComfyUI 根地址，如 https://xxx.trycloudflare.com
+        comfy_endpoint: (typeof localStorage !== 'undefined' && localStorage.getItem('comfydroid_endpoint')) || 'https://7eb368e9.r27.cpolar.top',
         checkpoint: '',              // 服务端 models/checkpoints 下的模型文件名
         sampler_name: 'euler',
         scheduler: 'normal',
@@ -113283,6 +113283,25 @@ function addNewElement() {
         if (eventSource && eventTypes) {
             eventSource.on(eventTypes.CHAT_CHANGED, syncTools);
         }
+        // 浮动配置按钮：改 ComfyUI 地址
+        try {
+            const fab = document.createElement('button');
+            fab.textContent = 'CD';
+            fab.style.cssText = 'position:fixed;right:8px;bottom:120px;z-index:999999;width:44px;height:44px;border-radius:50%;background:#e74c3c;color:#fff;border:none;font-size:14px;font-weight:bold;box-shadow:0 2px 8px rgba(0,0,0,0.4);';
+            fab.title = 'ComfyDroid 配置 ComfyUI 地址';
+            fab.onclick = () => {
+                const cur = settings.comfy_endpoint || '';
+                const v = prompt('ComfyUI 地址（结尾不带 /）:', cur);
+                if (v !== null) {
+                    const s = v.trim().replace(/\/+$/, '');
+                    settings.comfy_endpoint = s;
+                    try { localStorage.setItem('comfydroid_endpoint', s); } catch(e){}
+                    try { saveSettingsDebounced && saveSettingsDebounced(); } catch(e){}
+                    alert('已保存: ' + s);
+                }
+            };
+            document.body.appendChild(fab);
+        } catch(e) { console.warn('[ComfyDroid] fab error', e); }
         console.log('[ComfyDroid] 扩展已加载。当前可用工具：', Array.from(registeredNames));
     }
 
